@@ -55,7 +55,7 @@ The following events are available to `IDBDatabase` via event bubbling from {{do
 
 ## Example
 
-In the following code snippet, we open a database asynchronously ({{domxref("IDBFactory")}}), handle success and error cases, and create a new object store in the case that an upgrade is needed (`IDBDatabase`). For a complete working example, see our [To-do Notifications](https://github.com/mdn/dom-examples/tree/main/to-do-notifications) app ([view example live](https://mdn.github.io/dom-examples/to-do-notifications/)).
+In the following code snippet, we open a database asynchronously ({{domxref("IDBFactory")}}), handle success and error cases, and update the schema when an upgrade is needed (`IDBDatabase`). The `oldVersion` value is used so that each schema change only runs for database versions that still need it. For a complete working example, see our [To-do Notifications](https://github.com/mdn/dom-examples/tree/main/to-do-notifications) app ([view example live](https://mdn.github.io/dom-examples/to-do-notifications/)).
 
 ```js
 // Let us open our database
@@ -94,25 +94,27 @@ DBOpenRequest.onupgradeneeded = (event) => {
       "Error loading database.";
   };
 
-  // Create an objectStore for this database using
-  // IDBDatabase.createObjectStore
+  // Create the initial object store when the database is first created.
+  if (event.oldVersion < 1) {
+    const objectStore = db.createObjectStore("toDoList", {
+      keyPath: "taskTitle",
+    });
 
-  const objectStore = db.createObjectStore("toDoList", {
-    keyPath: "taskTitle",
-  });
+    objectStore.createIndex("hours", "hours", { unique: false });
+    objectStore.createIndex("minutes", "minutes", { unique: false });
+    objectStore.createIndex("day", "day", { unique: false });
+    objectStore.createIndex("month", "month", { unique: false });
+    objectStore.createIndex("year", "year", { unique: false });
 
-  // define what data items the objectStore will contain
+    note.appendChild(document.createElement("li")).textContent =
+      "Object store created.";
+  }
 
-  objectStore.createIndex("hours", "hours", { unique: false });
-  objectStore.createIndex("minutes", "minutes", { unique: false });
-  objectStore.createIndex("day", "day", { unique: false });
-  objectStore.createIndex("month", "month", { unique: false });
-  objectStore.createIndex("year", "year", { unique: false });
-
-  objectStore.createIndex("notified", "notified", { unique: false });
-
-  note.appendChild(document.createElement("li")).textContent =
-    "Object store created.";
+  // Version 4 adds the "notified" index.
+  if (event.oldVersion < 4) {
+    const objectStore = event.target.transaction.objectStore("toDoList");
+    objectStore.createIndex("notified", "notified", { unique: false });
+  }
 };
 ```
 
