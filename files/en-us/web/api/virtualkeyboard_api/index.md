@@ -11,19 +11,21 @@ browser-compat: api.VirtualKeyboard
 
 The VirtualKeyboard API provides developers control over the layout of their applications when the on-screen virtual keyboard appears and disappears on devices such as tablets, mobile phones, or other devices where a hardware keyboard may not be available.
 
-Web browsers usually deal with virtual keyboards on their own, by adjusting the viewport height and scrolling to input fields when focused.
+Web browsers usually handle virtual keyboards by resizing the {{Glossary("visual viewport")}} and scrolling focused input fields into view. The visual viewport is the currently visible part of the page, while the {{Glossary("layout viewport")}} is the area used to lay out its content. Resizing the visual viewport does not necessarily resize the layout viewport.
 
-The figure below illustrates the difference in viewport height and scroll position on a web page when the device has its on-screen virtual keyboard hidden, and when it is shown.
+The default `interactive-widget=resizes-visual` behavior leaves the layout viewport unchanged when the keyboard appears. Other resize behaviors can be selected using the [viewport `<meta>` element](/en-US/docs/Web/HTML/Reference/Elements/meta/name/viewport#the_effect_of_interactive_ui_widgets), in browsers that support the `interactive-widget` setting.
+
+The figure below illustrates the difference in visual viewport height and scroll position on a web page when the device has its on-screen virtual keyboard hidden, and when it is shown.
 
 ![Two devices, one without a virtual keyboard, showing that the webpage can use most of the device's vertical space, and one with a virtual keyboard, showing that the webpage can only be displayed in the remaining space](viewport-height.png)
 
 More complex applications or specific devices such as multi-screen mobile phones may require more control of the layout when the virtual keyboard appears.
 
-The figure below shows what happens on a dual-screen device when the virtual keyboard appears on just one of the two screens. The viewport becomes smaller on both screens to accommodate for the virtual keyboard, leaving wasted space on the screen where the virtual keyboard is not displayed.
+The figure below shows what happens on a dual-screen device when the virtual keyboard appears on just one of the two screens. The visual viewport becomes smaller on both screens to accommodate for the virtual keyboard, leaving wasted space on the screen where the virtual keyboard is not displayed.
 
 ![A dual-screen device, with its virtual keyboard displayed on one screen, showing that the webpage can only use the vertical space that remains after the keyboard was displayed, even if that leaves empty space on the other screen](dual-screen.png)
 
-The VirtualKeyboard API can be used to opt out of the way the browser automatically handles the virtual keyboard, and take full control of it instead. With the VirtualKeyboard API, the keyboard still appears and disappears as necessary when form controls are focused, but the viewport does not change, and you can use JavaScript and CSS to adapt your layout.
+The VirtualKeyboard API can be used to opt out of the way the browser automatically handles the virtual keyboard, and take full control of it instead. With the VirtualKeyboard API, the keyboard still appears and disappears as necessary when form controls are focused, but neither the visual viewport nor the layout viewport is resized to accommodate it, and you can use JavaScript and CSS to adapt your layout.
 
 ## Concept
 
@@ -35,7 +37,9 @@ The VirtualKeyboard API consists of three parts:
 
 ### Opt out of the automatic virtual keyboard behavior
 
-To opt out of the automatic virtual keyboard behavior of the browser, use `navigator.virtualKeyboard.overlaysContent = true`. The browser will no longer automatically resize the viewport to make space for the virtual keyboard, which will overlay your content instead.
+To opt out of the automatic virtual keyboard behavior of the browser, use `navigator.virtualKeyboard.overlaysContent = true`. The browser will no longer automatically resize either the visual viewport or the layout viewport to make space for the virtual keyboard, which will overlay your content instead.
+
+Alternatively, in browsers that support it, setting `interactive-widget=overlays-content` in the [viewport `<meta>` element](/en-US/docs/Web/HTML/Reference/Elements/meta/name/viewport#the_effect_of_interactive_ui_widgets) requests the same overlay behavior without JavaScript. Setting `navigator.virtualKeyboard.overlaysContent` to `true` takes precedence over the `interactive-widget` setting.
 
 ### Detect the virtual keyboard geometry using JavaScript
 
