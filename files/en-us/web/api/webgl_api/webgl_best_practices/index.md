@@ -120,11 +120,13 @@ WebGL doesn't offer APIs to query the maximum amount of video memory on the syst
 
 One technique pioneered by the Google Maps team is the notion of a _per-pixel VRAM budget_:
 
-1\) For one system (e.g., a particular desktop / laptop), decide the maximum amount of VRAM your application should use. 2) Compute the number of pixels covered by a maximized browser window. E.g. `(window.innerWidth * devicePixelRatio) * (window.innerHeight * window.devicePixelRatio)` 3) The per-pixel VRAM budget is (1) divided by (2), and is a constant.
+1. On a target system, choose a maximum amount of VRAM that your application can use reliably.
+2. Compute the number of device pixels covered by a maximized browser window: `(window.innerWidth * window.devicePixelRatio) * (window.innerHeight * window.devicePixelRatio)`.
+3. Divide the memory budget by the pixel count to obtain a budget in bytes per device pixel.
 
-This constant should _generally_ be portable among systems. Mobile devices typically have smaller screens than powerful desktop machines with large monitors. Re-compute this constant on a few target systems to get a reliable estimate.
+Treat this budget as an application-specific estimate, not a portable measure of available GPU memory. A physically small, high-density mobile display can have as many device pixels as a desktop display, so screen size or pixel count alone does not indicate how much memory is available. Validate the budget on a range of target devices, including devices with limited memory, and choose a conservative value.
 
-Now adjust all internal caching in the application (WebGLBuffers, WebGLTextures, etc.) to obey a maximum size, computed by this constant multiplied by the number of pixels covered by the _current_ browser window. This requires estimating the number of bytes consumed by each texture, for example. The cap also must typically be updated as the browser window resizes, and older resources above the limit must be purged.
+Now adjust all internal caching in the application (WebGLBuffers, WebGLTextures, etc.) to obey a maximum size, computed by this per-pixel budget multiplied by the number of device pixels covered by the _current_ browser window. This requires estimating the number of bytes consumed by each texture, for example. The cap also must typically be updated as the browser window resizes, and older resources above the limit must be purged.
 
 Keeping the application's VRAM usage under this cap will help to avoid out-of-memory errors and associated instability.
 
